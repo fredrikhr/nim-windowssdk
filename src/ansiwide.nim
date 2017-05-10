@@ -1,18 +1,18 @@
 import macros
 
 type
-  ImportCTuple = tuple[ansi, wide: string]
-  ReplaceRule = tuple[src, target: string]
-  AnsiWideReplaceRule = tuple[src, ansi, wide: string]
+  IdentReplacement = tuple[src, dst: string]
+  AnsiWideReplacement = tuple[src, ansi, wide: string]
 
-proc unpackReplaceRules(replacements: varargs[AnsiWideReplaceRule]
-  ): tuple[ansi, wide: seq[ReplaceRule]] =
-  var ansiReplace: seq[ReplaceRule] = @[]
-  var wideReplace: seq[ReplaceRule] = @[]
-  for replace in replacements:
-    ansiReplace.add((src: replace.src, target: replace.ansi))
-    wideReplace.add((src: replace.src, target: replace.wide))
-  result = (ansi: ansiReplace, wide: wideReplace)
+proc getIdentOrSymString(n: NimNode): string =
+  if n.isNil(): return nil
+  case n.kind
+  of nnkIdent:
+    result = $n.ident
+  of nnkSym:
+    result = $n.symbol
+  else:
+    expectKind(n, {nnkIdent, nnkSym})
 
 proc pragmaImportcReplace(pragma, importc: NimNode): NimNode =
   var foundImportc = false
@@ -20,7 +20,7 @@ proc pragmaImportcReplace(pragma, importc: NimNode): NimNode =
   for pragmaChild in pragma.children:
     var addPragmaChild = true
     case pragmaChild.kind
-    of nnkIdent:
+    of nnkIdent, nnkSym:
       if pragmaChild.eqIdent("importC"):
         foundImportc = true
         var importcColonExpr = newNimNode(nnkExprColonExpr)
@@ -38,177 +38,204 @@ proc pragmaImportcReplace(pragma, importc: NimNode): NimNode =
     if addPragmaChild: newPragma.add(pragmaChild.copy())
   result = if foundImportc: newPragma else: pragma
 
-proc recursiveIdentReplace(replacements: openArray[ReplaceRule], decl: NimNode,
-  importcValue: NimNode): NimNode =
-  if decl.isNil(): return
-  result = copyNimNode(decl)
-  if decl.kind == nnkIdent:
-    for replace in replacements:
-      if decl.eqIdent(replace.src):
-        result = newIdentNode(replace.target)
+proc modifyAstRecursive(identReplacements: openarray[IdentReplacement], ast: NimNode, importc: NimNode): NimNode =
+  if ast.isNil(): return
+  result = copyNimNode(ast)
+  if ast.kind in {nnkIdent, nnkSym}:
+    for replace in identReplacements:
+      if ast.eqIdent(replace.src):
+        result = newIdentNode(replace.dst)
         break
-  if decl.len > 0:
-    for declChild in decl.children:
-      result.add(recursiveIdentReplace(replacements, declChild, importcValue))
-  if not(importcValue.isNil) and result.kind == nnkPragma and result.len > 0:
-    result = pragmaImportcReplace(result, importcValue)
+  if ast.len > 0:
+    for astChild in ast.children:
+      result.add(modifyAstRecursive(identReplacements, astChild, importc))
+  if not(importc.isNil()) and result.kind == nnkPragma and result.len > 0:
+    result = pragmaImportcReplace(result, importc)
 
-proc expectKindMultiple(kind: set[NimNodeKind], nodes: varargs[NimNode]): void =
-  for n in nodes:
-    expectKind(n, kind)
+proc unpackAnsiWideReplacement(replace: AnsiWideReplacement): auto =
+  (ansi: (replace.src, replace.ansi), wide: (replace.src, replace.wide))
 
-proc identSymNodeToStr(n: NimNode): string =
-  if n.isNil(): return nil
-  case n.kind
-  of nnkIdent:
-    result = $n.ident
-  of nnkSym:
-    result = $n.symbol
-  else:
-    expectKind(n, {nnkIdent, nnkSym})
+proc unpackAnsiWideReplacements(ansiWideReplacements: openarray[AnsiWideReplacement]): auto =
+  var ansiReplacements = newSeq[IdentReplacement](ansiWideReplacements.len)
+  var wideReplacements = newSeq[IdentReplacement](ansiWideReplacements.len)
+  var i = 0
+  for replace in ansiWideReplacements:
+    let x = unpackAnsiWideReplacement(replace)
+    ansiReplacements[i] = x.ansi
+    wideReplacements[i] = x.wide
+    i += 1
+  (ansi: ansiReplacements, wide: wideReplacements)
 
-proc nimNodesToReplaceRule(src, target: NimNode): ReplaceRule =
-  (src: src.identSymNodeToStr, target: target.identSymNodeToStr)
+proc ansiWideProc(identReplacements: openarray[AnsiWideReplacement],
+  ansiImportC, wideImportC: NimNode, ast: NimNode): NimNode =
+  let replacements = unpackAnsiWideReplacements(identReplacements)
+  result = newStmtList(
+    modifyAstRecursive(replacements.ansi, ast, ansiImportC),
+    modifyAstRecursive(replacements.wide, ast, wideImportC)
+  )
+  when not(defined(release)) or defined(debug):
+    echo result.repr
 
-proc ansiWideCommonMacroProc(ansiReplace, wideReplace: openArray[ReplaceRule],
-  importcAnsi, importcWide: NimNode,
-  decl: NimNode): NimNode =
-  result = newStmtList()
-  result.add(recursiveIdentReplace(ansiReplace, decl, importcAnsi))
-  result.add(recursiveIdentReplace(wideReplace, decl, importcWide))
+macro ansiWide*(tIdent, ansiIdent, wideIdent: untyped,
+  innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
+  ast: untyped): typed =
+  #[
+    ansiWide(tIdent = StringContainer, ansiIdent = StringContainerA, wideIdent = StringContainerW,
+      innerTIdent = LPTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString):
+      type StringContainer = object
+        f1: LPTStr
+    #[
+      Generates:
+      type StringContainerA = object
+        f1: cstring
+      type StringContainerW = object
+        f1: WideCString
+    ]#
+  ]#
+  ansiWideProc([
+      (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+      (innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)
+    ], nil, nil, ast)
 
-macro ansiWideMulti*(replacements: static[openArray[AnsiWideReplaceRule]],
-  importc: static[ImportCTuple], decl: untyped): typed =
-  let (ansiReplace, wideReplace) = unpackReplaceRules(replacements)
-  var importcAnsi, importcWide: NimNode
-  if not(importc.ansi.isNil()):
-    importcAnsi = newStrLitNode(importc.ansi)
-  if not(importc.wide.isNil()):
-    importcWide = newStrLitNode(importc.wide)
-  ansiWideCommonMacroProc(ansiReplace, wideReplace,
-  importcAnsi, importcWide, decl)
+macro ansiWideImportC*(tIdent, ansiIdent, wideIdent: untyped,
+  innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
+  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiWideProc([
+      (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+      (innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)
+    ], ansiImportC, wideImportC, ast)
 
-proc ansiWideMacroProc(outerSrc, outerAnsi, outerWide: NimNode,
-  innerSrc, innerAnsi, innerWide: NimNode,
-  importcAnsi: NimNode, importcWide: NimNode,
-  decl: NimNode): NimNode =
-  expectKindMultiple({nnkSym, nnkIdent}, outerSrc, outerAnsi, outerWide, innerSrc, innerAnsi, innerWide)
-  let
-    ansiReplace = [nimNodesToReplaceRule(outerSrc, outerAnsi), nimNodesToReplaceRule(innerSrc, innerAnsi)]
-    wideReplace = [nimNodesToReplaceRule(outerSrc, outerWide), nimNodesToReplaceRule(innerSrc, innerWide)]
-  ansiWideCommonMacroProc(ansiReplace, wideReplace, importcAnsi, importcWide, decl)
+macro ansiWideMulti*(identReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): typed =
+  ansiWideProc(identReplacements, nil, nil, ast)
 
-macro ansiWideImportC*(outerSrc, outerAnsi, outerWide, innerSrc: untyped, innerAnsi, innerWide: typed,
-  importcAnsi, importcWide: typed,
-  decl: untyped): typed =
-  ansiWideMacroProc(outerSrc, outerAnsi, outerWide, 
-    innerSrc, innerAnsi, innerWide,
-    importcAnsi, importcWide, decl)
+macro ansiWideMultiImportC*(identReplacements: static[openarray[AnsiWideReplacement]],
+  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiWideProc(identReplacements, ansiImportC, wideImportC, ast)
 
-macro ansiWide*(outerSrc, outerAnsi, outerWide, innerSrc: untyped, innerAnsi, innerWide: typed,
-  decl: untyped): typed =
-  ansiWideMacroProc(outerSrc, outerAnsi, outerWide, 
-    innerSrc, innerAnsi, innerWide,
-    nil, nil, decl)
+proc ansiWideWhenProc(identReplacements: openarray[AnsiWideReplacement],
+  ansiImportC, wideImportC: NimNode, ast: NimNode): NimNode =
+  let replacements = unpackAnsiWideReplacements(identReplacements)
+  var whenStmt = newNimNode(nnkWhenStmt)
+  var ansiBranch = newNimNode(nnkElifBranch)
+  var ansiCond = newCall(!"defined", newIdentNode("useWinAnsi"))
+  var ansiBody = modifyAstRecursive(replacements.ansi, ast, ansiImportC)
+  ansiBranch.add(ansiCond, ansiBody)
+  var wideBranch = newNimNode(nnkElse)
+  var wideBody = modifyAstRecursive(replacements.wide, ast, wideImportC)
+  wideBranch.add(wideBody)
+  whenStmt.add(ansiBranch, wideBranch)
+  result = newStmtList(whenStmt)
+  when not(defined(release)) or defined(debug):
+    echo result.repr
 
-proc ansiWideWhenCommonMacroProc(ansiReplace, wideReplace: openArray[ReplaceRule],
-  importcAnsi, importcWide, decl: NimNode): NimNode =
-  result = newStmtList()
-  var resultWhen = newNimNode(nnkWhenStmt)
-  var whenAnsiBranch = newNimNode(nnkElifBranch)
-  var whenAnsiCond = newCall(newIdentNode(!"defined"), newIdentNode(!"useWinAnsi"))
-  var whenAnsiBody = recursiveIdentReplace(ansiReplace, decl, importcAnsi)
-  whenAnsiBranch.add(whenAnsiCond, whenAnsiBody)
-  var whenWideBranch = newNimNode(nnkElse)
-  whenWideBranch.add(recursiveIdentReplace(wideReplace, decl, importcWide))
-  resultWhen.add(whenAnsiBranch, whenWideBranch)
-  result.add(resultWhen)
+macro ansiWideWhen*(tIdent: untyped, ansiIdent, wideIdent: typed, ast: untyped): typed =
+  ansiWideWhenProc([
+      (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
+    ], nil, nil, ast)
 
-proc ansiWideWhenMacroProc(src, ansi, wide, importcAnsi, importcWide, decl: NimNode): NimNode =
-  expectKindMultiple({nnkSym, nnkIdent}, src, ansi, wide)
-  let
-    ansiReplace = [nimNodesToReplaceRule(src, ansi)]
-    wideReplace = [nimNodesToReplaceRule(src, wide)]
-  ansiWideWhenCommonMacroProc(ansiReplace, wideReplace, importcAnsi, importcWide, decl)
+macro ansiWideWhenImportC*(tIdent: untyped, ansiIdent, wideIdent: typed,
+  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiWideWhenProc([
+      (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
+    ], ansiImportC, wideImportC, ast)
 
-macro ansiWideWhenImportC*(src: untyped, ansi, wide: typed,
-  importcAnsi, importcWide: typed, decl: untyped): typed =
-  ansiWideWhenMacroProc(src, ansi, wide, importcAnsi, importcWide, decl)
+macro ansiWideWhenMulti*(identReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): typed =
+  ansiWideWhenProc(identReplacements, nil, nil, ast)
 
-macro ansiWideWhen*(src: untyped, ansi, wide: typed, decl: untyped): typed =
-  ansiWideWhenMacroProc(src, ansi, wide, nil, nil, decl)
+macro ansiWideWhenMultiImportC*(identReplacements: static[openarray[AnsiWideReplacement]],
+ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiWideWhenProc(identReplacements, ansiImportC, wideImportC, ast)
 
-macro ansiWideWhenMulti*(replacements: static[openArray[AnsiWideReplaceRule]],
-  importc: static[ImportCTuple], decl: untyped): typed =
-  let (ansiReplace, wideReplace) = unpackReplaceRules(replacements)
-  var importcAnsi, importcWide: NimNode
-  if not(importc.ansi.isNil()):
-    importcAnsi = newStrLitNode(importc.ansi)
-  if not(importc.wide.isNil()):
-    importcWide = newStrLitNode(importc.wide)
-  ansiWideWhenCommonMacroProc(ansiReplace, wideReplace,
-    importcAnsi, importcWide, decl)
+proc ansiWideAllProc*(outerReplacement: AnsiWideReplacement,
+  innerReplacements: openarray[AnsiWideReplacement],
+  ansiImportC, wideImportC: NimNode, ast: NimNode): NimNode =
+  var allReplacements = newSeq[AnsiWideReplacement](1 + innerReplacements.len)
+  allReplacements[0] = outerReplacement
+  allReplacements[1..innerReplacements.len] = innerReplacements
+  newStmtList(
+    ansiWideProc(allReplacements, ansiImportC, wideImportC, ast),
+    ansiWideWhenProc(innerReplacements, ansiImportC, wideImportC, ast)
+    )
 
-proc ansiWideAllCommonMacroProc(outerAnsiReplace, outerWideReplace,
-  innerAnsiReplace, innerWideReplace: openArray[ReplaceRule],
-  importcAnsi, importcWide, decl: NimNode): NimNode =
-  var
-    ansiReplace: seq[ReplaceRule] = @[]
-    wideReplace: seq[ReplaceRule] = @[]
-  ansiReplace.add(outerAnsiReplace)
-  wideReplace.add(outerWideReplace)
-  ansiReplace.add(innerAnsiReplace)
-  wideReplace.add(innerWideReplace)
-  let
-    ansiWideStmt = ansiWideCommonMacroProc(ansiReplace, wideReplace,
-      importcAnsi, importcWide, decl)
-    ansiWideWhen = ansiWideWhenCommonMacroProc(innerAnsiReplace, innerWideReplace,
-      importcAnsi, importcWide, decl)
-  result = newStmtList(ansiWideStmt, ansiWideWhen)
+macro ansiWideAll*(tIdent, ansiIdent, wideIdent: untyped,
+  innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
+  ast: untyped): typed =
+  #[
+    ansiWideAll(tIdent = StringContainer, ansiIdent = StringContainerA, wideIdent = StringContainerW,
+      innerTIdent = LPTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString):
+      type StringContainer = object
+        f1: LPTStr
+    #[
+      Generates:
+      type StringContainerA = object
+        f1: LPStr
+      type StringContainerW = object
+        f1: LPWStr
+      when defined(useWinAnsi):
+        type StringContainer = object
+          f1: LPStr
+      else:
+        type StringContainer = object
+          f1: LPWStr
+    ]#
+  ]#
+  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+    [(innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)],
+    nil, nil, ast)
 
-macro ansiWideAllMulti*(outerReplacement: static[AnsiWideReplaceRule],
-  innerReplacements: static[openArray[AnsiWideReplaceRule]],
-  importc: static[ImportCTuple], decl: untyped): typed =
-  let 
-    (outerAnsiReplace, outerWideReplace) = unpackReplaceRules(outerReplacement)
-    (innerAnsiReplace, innerWideReplace) = unpackReplaceRules(innerReplacements)
-  var importcAnsi, importcWide: NimNode
-  if not(importc.ansi.isNil()):
-    importcAnsi = newStrLitNode(importc.ansi)
-  if not(importc.wide.isNil()):
-    importcWide = newStrLitNode(importc.wide)
-  ansiWideAllCommonMacroProc(outerAnsiReplace, outerWideReplace,
-    innerAnsiReplace, innerWideReplace,
-    importcAnsi, importcWide, decl)
+macro ansiWideAllImportC*(tIdent, ansiIdent, wideIdent: untyped,
+  innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
+  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  #[
+    ansiWideAll(tIdent = foobar, ansiIdent = foobarA, wideIdent = foobarW,
+      innerTIdent = LPTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString,
+      ansiImportC = "FoobarA", wideImportC = "FoobarW"):
+      proc foobar(str: LPTStr) {.importc.}
+    #[
+      Generates:
+      proc foobarA(str: LPStr) {.importc: "FoobarA".}
+      proc foobarW(str: LPWStr) {.importc: "FoobarW".}
+      when defined(useWinAnsi):
+        proc foobar(str: LPStr) {.importc: "FoobarA".}
+      else:
+        proc foobar(str: LPWStr) {.importc: "FoobarW".}
+    ]#
+  ]#
+  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+    [(innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)],
+    ansiImportC, wideImportC, ast)
 
-proc ansiWideAllMacroProc(outerSrc, outerAnsi, outerWide: NimNode,
-  innerSrc, innerAnsi, innerWide: NimNode,
-  importcAnsi, importcWide, decl: NimNode): NimNode =
-  let
-    outerAnsiReplace = [nimNodesToReplaceRule(outerSrc, outerAnsi)]
-    outerWideReplace = [nimNodesToReplaceRule(outerSrc, outerWide)]
-    innerAnsiReplace = [nimNodesToReplaceRule(innerSrc, innerAnsi)]
-    innerWideReplace = [nimNodesToReplaceRule(innerSrc, innerWide)]
-  result = ansiWideAllCommonMacroProc(outerAnsiReplace, outerWideReplace,
-    innerAnsiReplace, innerWideReplace, importcAnsi, importcWide, decl)
+macro ansiWideAllMulti*(tIdent, ansiIdent, wideIdent: untyped,
+  innerReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): typed =
+  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+    innerReplacements, nil, nil, ast)
 
-macro ansiWideAllImportC*(outerSrc, outerAnsi, outerWide, innerSrc: untyped, innerAnsi, innerWide: typed,
-  importcAnsi, importcWide: typed,
-  decl: untyped): typed =
-  ansiWideAllMacroProc(outerSrc, outerAnsi, outerWide,
-    innerSrc, innerAnsi, innerWide,
-    importcAnsi, importcWide, decl)
-
-macro ansiWideAll*(outerSrc, outerAnsi, outerWide, innerSrc: untyped, innerAnsi, innerWide: typed,
-  decl: untyped): typed =
-  ansiWideAllMacroProc(outerSrc, outerAnsi, outerWide,
-    innerSrc, innerAnsi, innerWide, nil, nil, decl)
+macro ansiWideAllMultiImportC*(tIdent, ansiIdent, wideIdent: untyped,
+  innerReplacements: static[openarray[AnsiWideReplacement]],
+  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+    innerReplacements, ansiImportC, wideImportC, ast)
 
 #[
-ansiWideAllImportC(foobar, foobarA, foobarW, LpTStr, cstring, WideCString,
-  "foobarA", "foobarW", "foobar"):
-  proc foobar*(str: LpTStr): int32 {.stdcall, dynlib: "Foobar.dll", importC.}
+ansiWideAll(tIdent = StringContainer, ansiIdent = StringContainerA, wideIdent = StringContainerW,
+  innerTIdent = LpTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString):
+  type StringContainer = object
+    f1: LpTStr
+  ------------------------------------
+  Generates:
+  type StringContainerA = object
+    f1: cstring
+  type StringContainerW = object
+    f1: WideCString
+]#
 
-ansiwide.nim(212, 19) template/generic instantiation from here
-ansiwide.nim(41, 6) Error: type mismatch: got (NimNode) but expected 'cstring = CString'
+#[
+ansiWideAllImportC(tIdent = foobar, ansiIdent = foobarA, wideIdent = foobarW,
+  innerTIdent = LPTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString,
+  ansiImportC = "FoobarA", wideImportC = "FoobarW"):
+  proc foobar(str: LPTStr) {.importc.}
+  ------------------------------------
+  Generates:
+  proc foobarA(str: LPStr) {.importc: "FoobarA".}
+  proc foobarW(str: LPWStr) {.importc: "FoobarW".}
 ]#
