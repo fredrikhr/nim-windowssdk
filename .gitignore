@@ -3,6 +3,7 @@
 !*.*
 
 # Cache
+obj/
 nimcache/
 rnimcache/
 dnimcache/
@@ -17,6 +18,7 @@ dnimcache/
 *.log
 *.ilk
 *.pdb
+*.obj
 
 # iOS specific wildcards.
 *.mode1v3

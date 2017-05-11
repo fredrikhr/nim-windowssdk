@@ -7,10 +7,10 @@
 
 int main(int argc, char* argv[])
 {
-	const int size = sizeof(SECURITY_STRING);
-	const auto v = SEC_DELETED_HANDLE;
+	const int size = sizeof(SEC_CHAR);
+	const auto v = SEC_E_INSUFFICIENT_MEMORY;
 
-	void* ptr = NULL;
+	void* ptr = AcquireCredentialsHandle;
 
 	return EXIT_SUCCESS;
 }
