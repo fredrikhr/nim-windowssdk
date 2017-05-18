@@ -9,7 +9,7 @@
 int main(int argc, char* argv[])
 {
 	const int size = sizeof(BOOL);
-	const auto v = SEC_E_INSUFFICIENT_MEMORY;
+	const auto v = SEC_E_SECPKG_NOT_FOUND;
 
 	void* ptr = AcquireCredentialsHandle;
 
