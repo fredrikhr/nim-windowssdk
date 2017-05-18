@@ -71,14 +71,10 @@
         {
             "taskName": "Test",
             "suppressTaskName": true,
-            "command": "nim",
+            "command": "nimble",
             "echoCommand": true,
             "args": [
-                "compile",
-                "-r",
-                "-o:bin/twindowssdk",
-                "--nimcache:obj",
-                "test/twindowssdk"
+                "test"
             ],
             "isTestCommand": true,
             "options": {

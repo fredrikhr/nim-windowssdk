@@ -30,7 +30,7 @@ task docall, "Document srcDir recursively":
         echo "skipping non nim file: $#" % [srcFile]
       let docFile = docDir & srcFile[srcDir.len..^5] & ".html"
       echo "file: $# -> $#" % [srcFile, docFile]
-      exec "nim doc $# -o:\"$#\" \"$#\"" % [nimOpts, docFile, srcFile]
+      exec "nim doc2 $# -o:\"$#\" \"$#\"" % [nimOpts, docFile, srcFile]
     for srcSubDir in listDirs(srcDir):
       let docSubDir = docDir & srcSubDir[srcDir.len..^1]
       # echo "dir: $# -> $#" % [srcSubDir, docSubDir]
