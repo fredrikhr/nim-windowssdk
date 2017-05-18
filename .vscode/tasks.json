@@ -58,11 +58,10 @@
         {
             "taskName": "Generate documentation",
             "suppressTaskName": true,
-            "command": "nim",
+            "command": "nimble",
             "echoCommand": true,
             "args": [
-                "doc2",
-                "--project", "src/windowssdk"
+                "docall"
             ],
             "options": {
                 "cwd": "${workspaceRoot}"
