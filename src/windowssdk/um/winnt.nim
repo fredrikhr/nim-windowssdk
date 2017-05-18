@@ -55,8 +55,4 @@ type
     highPart: int32
   PLuid* = ptr Luid
 
-type Boolean* = distinct byte
-proc toBoolean*(b: bool): Boolean {.inline.} = 
-  if b: 1.Boolean else: 0.Boolean
-proc toBool*(b: Boolean): bool {.inline.} =
-  if b.byte == 0: false else: true
+type Boolean* = bool
