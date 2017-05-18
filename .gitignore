@@ -33,3 +33,6 @@ xcuserdata/
 # Private directories and files (IDEs)
 .*/
 ~*
+
+# Documentation directories
+htmldocs/

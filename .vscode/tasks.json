@@ -56,6 +56,20 @@
             "problemMatcher": "$tsc-watch"
         },
         {
+            "taskName": "Generate documentation",
+            "suppressTaskName": true,
+            "command": "nim",
+            "echoCommand": true,
+            "args": [
+                "doc2",
+                "--project", "src/windowssdk"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "problemMatcher": "$tsc-watch"
+        },
+        {
             "taskName": "C Reference (VS2017 Community)",
             "suppressTaskName": true,
             "echoCommand": true,

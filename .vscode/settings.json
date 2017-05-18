@@ -2,5 +2,6 @@
 {
     "nim.project": [
         "src/windowssdk.nim"
-    ]
+    ],
+    "nim.lintOnSave": true
 }
