@@ -30,6 +30,8 @@ type
 
 type
   SecurityStatus* = distinct uint32
+proc `==`*(a, b: SecurityStatus): bool = (a.uint32 == b.uint32)
+proc `!=`*(a, b: SecurityStatus): bool = (a.uint32 != b.uint32)
 
 ansiWideWhen(SecTChar, SecChar, SecWChar):
   type SecurityPStr* = AnySizeArrayPtr[SecTChar]
@@ -319,8 +321,8 @@ const
   isc_ret_forward_credentials* = 0x00400000.Isc_Ret_Flag
 
   isc_ret_used_http_style* = 0x01000000.Isc_Ret_Flag
-  isc_ret_no_additional_token = 0x02000000.Isc_Ret_Flag ## *INTERNAL*
-  isc_ret_reauthentication = 0x08000000.Isc_Ret_Flag ## *INTERNAL*
+  isc_ret_no_additional_token {.used.} = 0x02000000.Isc_Ret_Flag ## *INTERNAL*
+  isc_ret_reauthentication {.used.} = 0x08000000.Isc_Ret_Flag ## *INTERNAL*
   isc_ret_confidentiality_only* = 0x40000000.Isc_Ret_Flag ## honored by SPNEGO/Kerberos
 
 type Asc_Req_Flag* = distinct uint32
@@ -377,7 +379,7 @@ const
   asc_ret_allow_context_replay* {.deprecated.} = 0x00400000.Asc_Ret_Flag ## deprecated - don't use this flag!!!
   asc_ret_fragment_only* = 0x00800000.Asc_Ret_Flag
   asc_ret_no_token* = 0x01000000.Asc_Ret_Flag
-  asc_ret_no_additional_token = 0x02000000.Asc_Ret_Flag ## *INTERNAL*
+  asc_ret_no_additional_token {.used.} = 0x02000000.Asc_Ret_Flag ## *INTERNAL*
   # ssp_ret_reauthentication = 0x08000000.Asc_Ret_Flag ## *INTERNAL*
 
 type SecPkg_Cred_Attr = distinct uint32
@@ -975,6 +977,7 @@ ansiWideAll(Sspi_Query_Context_Attributes_Fn,
     attribute: SecPkg_Attr,
     buffer: pointer
     ): SecurityStatus {.stdcall.}
+#[
 ansiWideAllImportC(sspiQueryContextAttributesEx,
   sspiQueryContextAttributesExA, sspiQueryContextAttributesExW, void, void, void,
   "QueryContextAttributesExA", "QueryContextAttributesExW"):
@@ -988,6 +991,7 @@ ansiWideAllImportC(sspiQueryContextAttributesEx,
     ## :attribute: Attribute to query
     ## :buffer: Buffer for attributes
     ## :bufferSize: Size of buffer
+]#
 ansiWideAll(Sspi_Query_Context_Attributes_Ex_Fn,
   Sspi_Query_Context_Attributes_Ex_Fn_A, Sspi_Query_Context_Attributes_Ex_Fn_W, void, void, void):
   type Sspi_Query_Context_Attributes_Ex_Fn* = proc(
@@ -1040,6 +1044,7 @@ ansiWideAll(Sspi_Query_Credentials_Attributes_Fn,
     attribute: SecPkg_Cred_Attr,
     buffer: pointer
     ): SecurityStatus {.stdcall.}
+#[
 ansiWideAllImportC(sspiQueryCredentialsAttributesEx,
   sspiQueryCredentialsAttributesExA, sspiQueryCredentialsAttributesExW,
   void, void, void, "QueryCredentialsAttributesExA", "QueryCredentialsAttributesExW"):
@@ -1053,6 +1058,7 @@ ansiWideAllImportC(sspiQueryCredentialsAttributesEx,
     ## :attribute: Attribute to query
     ## :buffer: Buffer for attributes
     ## :size: Size of buffer
+]#
 ansiWideAll(Sspi_Query_Credentials_Attributes_Ex_Fn,
   Sspi_Query_Credentials_Attributes_Ex_Fn_A, Sspi_Query_Credentials_Attributes_Ex_Fn_W,
   void, void, void):
@@ -1220,6 +1226,7 @@ ansiWideAllMulti(Sspi_Query_Security_Package_Info_Fn,
 type SecDelegationType* = enum
   secFull, secService, secTree, secDirectory, secObject
 
+#[
 proc sspiDelegateSecurityContext*(
   context: ptr CtxtHandle,
   target: LPStr,
@@ -1227,13 +1234,14 @@ proc sspiDelegateSecurityContext*(
   timestamp: ptr TimeStamp = nil,
   packageParameters: ptr SecBuffer = nil,
   output: var SecBufferDesc
-  ): SecurityStatus {.stdcall, dynlib: "Secur32.dll", importc.}
+  ): SecurityStatus {.stdcall, dynlib: "Secur32.dll", importc: "DelegateSecurityContext".}
   ## :context: Active context to delegate
   ## :target: Target path
   ## :delegationType: Type of delegation
   ## :timestamp: OPTIONAL time limit
   ## :packageParameters: OPTIONAL package specific
   ## :output: Token for :sspiApplyControlToken:.
+]#
 
 #[
 ###########################################################################
@@ -1823,24 +1831,20 @@ proc sspiIsAuthIdentityEncrypted*(
   ): Boolean {.stdcall, dynlib: "SspiCli.dll", importc: "SspiIsAuthIdentityEncrypted".}
   ## ref.: https://msdn.microsoft.com/en-us/library/dd401708.aspx
 
-ansiWideAllImportC(sspiEncodeAuthIdentityAsStrings,
-  sspiEncodeAuthIdentityAsStringsA, sspiEncodeAuthIdentityAsStringsW,
-  LPTStr, LPStr, LPWStr,
-  "SspiEncodeAuthIdentityAsStringsA", "SspiEncodeAuthIdentityAsStringsW"):
-  proc sspiEncodeAuthIdentityAsStrings*(
-    authIdentity: ptr Sec_WinNt_Auth_Identity_Info,
-    userName, domainName, packedCredentials: var LPTStr
-    ): SecurityStatus {.stdcall, dynlib: "SspiCli.dll", importc.}
-    ## Convert the opaque identity info structure passed in to the
-    ## 3 tuple <username, domainname, 'password'>.
-    ## 
-    ## Note: The 'strings' returned need not necessarily be
-    ## in user recognisable form. The purpose of this API
-    ## is to 'flatten' the opaque structure into the 3 tuple.
-    ## 
-    ## zero out the packedCredentials then
-    ## free the returned memory using `sspiLocalFree`
-    ## ref.: https://msdn.microsoft.com/en-us/library/dd401701.aspx
+proc sspiEncodeAuthIdentityAsStrings*(
+  authIdentity: ptr Sec_WinNt_Auth_Identity_Info,
+  userName, domainName, packedCredentials: var LPWStr
+  ): SecurityStatus {.stdcall, dynlib: "SspiCli.dll", importc: "SspiEncodeAuthIdentityAsStrings".}
+  ## Convert the opaque identity info structure passed in to the
+  ## 3 tuple <username, domainname, 'password'>.
+  ## 
+  ## Note: The 'strings' returned need not necessarily be
+  ## in user recognisable form. The purpose of this API
+  ## is to 'flatten' the opaque structure into the 3 tuple.
+  ## 
+  ## zero out the packedCredentials then
+  ## free the returned memory using `sspiLocalFree`
+  ## ref.: https://msdn.microsoft.com/en-us/library/dd401701.aspx
 
 proc sspiValidateAuthIdentity*(
   authData: ptr Sec_WinNt_Auth_Identity_Info
@@ -1869,17 +1873,14 @@ proc sspiLocalFree*(
   ): void {.stdcall, dynlib: "SspiCli.dll", importc: "SspiLocalFree".}
   ## ref.: https://msdn.microsoft.com/en-us/library/dd401710.aspx
 
-ansiWideAllImportC(sspiEncodeStringsAsAuthIdentity, 
-  sspiEncodeStringsAsAuthIdentityA, sspiEncodeStringsAsAuthIdentityW,
-  LPTStr, LPStr, LPWStr, "SspiEncodeStringsAsAuthIdentityA", "SspiEncodeStringsAsAuthIdentityW"):
-  proc sspiEncodeStringsAsAuthIdentity*(
-    userName, domainName, packedCredentialsString: LPTStr,
-    authIdentity: var ptr Sec_WinNt_Auth_Identity_Info
-    ): SecurityStatus {.stdcall, dynlib: "SspiCli.dll", importc.}
-    ## call ``sspiFreeAuthIdentity`` to free the returned `authIdentity`
-    ## which zeroes out the credentials blob before freeing it
-    ##
-    ## ref.: https://msdn.microsoft.com/en-us/library/dd401702.aspx
+proc sspiEncodeStringsAsAuthIdentity*(
+  userName, domainName, packedCredentialsString: LPWStr,
+  authIdentity: var ptr Sec_WinNt_Auth_Identity_Info
+  ): SecurityStatus {.stdcall, dynlib: "SspiCli.dll", importc: "SspiEncodeStringsAsAuthIdentity".}
+  ## call ``sspiFreeAuthIdentity`` to free the returned `authIdentity`
+  ## which zeroes out the credentials blob before freeing it
+  ##
+  ## ref.: https://msdn.microsoft.com/en-us/library/dd401702.aspx
 
 proc sspiCompareAuthIdentities*(
   authIdentity1, authIdentity2: ptr Sec_WinNt_Auth_Identity_Info,
@@ -1904,10 +1905,28 @@ proc sspiUnmarshalAuthIdentity*(
   ): SecurityStatus {.stdcall, dynlib: "SspiCli.dll", importc: "SspiUnmarshalAuthIdentity".}
   ## free the returned auth identity using ``sspiFreeAuthIdentity()``
   ##
-  ## ref.: https://msdn.microsoft.com/en-us/library/dd401711.aspx
+  ## ref.: https://msdn.microsoft.com/en-us/library/dd401715.aspx
 
 proc sspiIsPromptingNeeded*(errorOrNtStatus: uint32
   ): Boolean {.stdcall, dynlib: "CredUi.dll", importc: "SspiIsPromptingNeeded".}
+  ## ref.: https://msdn.microsoft.com/en-us/library/dd401709.aspx
+
+proc sspiGetTargetHostName*(
+  targetName: LPWStr,
+  hostName: var LPWStr
+  ): SecurityStatus {.stdcall, dynlib: "SspiCli.dll", importc: "SspiGetTargetHostName".}
+  ## ref.: https://msdn.microsoft.com/en-us/library/dd401707.aspx
+
+proc sspiExcludePackage*(
+  authIdentity: ptr Sec_WinNt_Auth_Identity_Info,
+  packageName: LPWStr,
+  newAuthIdentity: var ptr Sec_WinNt_Auth_Identity_Info
+  ): SecurityStatus {.stdcall, dynlib: "SspiCli.dll", importc: "SspiExcludePackage".}
+  ## ref.: https://msdn.microsoft.com/en-us/library/dd401704.aspx
+
+const
+  sec_winnt_auth_identity_marshalled* = 0x4.Sec_WinNt_Auth_Identity_Flag ## all data is in one buffer
+  sec_winnt_auth_identity_only* = 0x8.Sec_WinNt_Auth_Identity_Flag ## these credentials are for identity only - no PAC needed
 
 #[
   Routines for manipulating packages
