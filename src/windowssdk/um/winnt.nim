@@ -4,17 +4,14 @@
 Copyright (c) Microsoft Corporation. All rights reserved.
 
 Module Name:
-
     winnt.h
 
 Abstract:
-
     This module defines the 32-Bit Windows types and constants that are
     defined by NT, but exposed through the Win32 API.
 
 Revision History:
-
---
+    --
 ]##
 
 import .. / ansiwide

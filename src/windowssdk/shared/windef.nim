@@ -1,10 +1,10 @@
-#############################################################################
-##                                                                         ##
-## windef.h -- Basic Windows Type Definitions                              ##
-##                                                                         ##
-## Copyright (c) Microsoft Corporation. All rights reserved.               ##
-##                                                                         ##
-#############################################################################
+##
+##                                                                         
+## windef.h -- Basic Windows Type Definitions                            
+##                                                                        
+## Copyright (c) Microsoft Corporation. All rights reserved.             
+##                                                                         
+##
 
 import .. / um / winnt
 

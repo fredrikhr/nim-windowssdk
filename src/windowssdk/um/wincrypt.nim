@@ -1,13 +1,13 @@
-##############################################################################
 ##
-##  Microsoft Windows
-##  Copyright (C) Microsoft Corporation, 1992-1999.
 ##
-##  File:       wincrypt.h
+## | Microsoft Windows
+## | Copyright (C) Microsoft Corporation, 1992-1999.
 ##
-##  Contents:   Cryptographic API Prototypes and Definitions
+## :File:       wincrypt.h
 ##
-##############################################################################
+## :Contents:   Cryptographic API Prototypes and Definitions
+##
+##
 
 type 
   Alg_Class* = distinct uint32
