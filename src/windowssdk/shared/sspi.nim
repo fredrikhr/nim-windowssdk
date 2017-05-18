@@ -56,17 +56,17 @@ ansiWideAll(SecPkgInfo, SecPkgInfoA, SecPkgInfoW, LPTStr, LPSTr, LPWStr):
   type SecPkgInfo* = object
     ## Provides general information about a security provider
     ## ref.: https://msdn.microsoft.com/en-us/library/aa380104.aspx
-    capabilities: SecPkg_Flag
+    capabilities*: SecPkg_Flag
       ## Capability bitmask
-    version: uint16
+    version*: uint16
       ## Version of driver
-    rpcId: SecPkg_Id
+    rpcId*: SecPkg_Id
       ## ID for RPC Runtime
-    tokenMaxSize: uint32
+    tokenMaxSize*: uint32
       ## Size of authentication token (max)
-    name: LPTStr
+    name*: LPTStr
       ## Text name
-    comment: LPTStr
+    comment*: LPTStr
       ## Comment
 
 const
@@ -704,7 +704,7 @@ const
   secpkg_context_export_to_kernel* = 0x00000004.SecPkg_Context_Export_Flag ## Context is to be transferred to the kernel
 
 ansiWideAllImportC(tIdent = sspiAcquireCredentialsHandle,
-  ansiIdent = sspiAcquireCredentialsHandleAnsi, wideIdent = sspiAcquireCredentialsHandleWide,
+  ansiIdent = sspiAcquireCredentialsHandleA, wideIdent = sspiAcquireCredentialsHandleW,
   innerTIdent = LPTStr, innerAnsiIdent = LPStr, innerWideIdent = LPWStr,
   ansiImportC = "AcquireCredentialsHandleA", wideImportC = "AcquireCredentialsHandleW"):
   proc sspiAcquireCredentialsHandle*(
@@ -789,7 +789,7 @@ ansiWideAll(Sspi_Add_Credentials_Fn, Sspi_Add_Credentials_Fn_A, Sspi_Add_Credent
 ########################################################################
 ]#
 ansiWideAllImportC(tIdent = sspiChangeAccountPassword,
-  ansiIdent = sspiChangeAccountPasswordAnsi, wideIdent = sspiChangeAccountPasswordWide,
+  ansiIdent = sspiChangeAccountPasswordA, wideIdent = sspiChangeAccountPasswordW,
   innerTIdent = LPTStr, innerAnsiIdent = LPStr, innerWideIdent = LPWStr,
   ansiImportC = "ChangeAccountPasswordA", wideImportC = "ChangeAccountPasswordW"):
   proc sspiChangeAccountPassword*(
@@ -815,7 +815,7 @@ ansiWideAll(Sspi_Change_Password_Fn, Sspi_Change_Password_Fn_A, Sspi_Change_Pass
 ########################################################################
 ]#
 ansiWideAllImportC(tIdent = sspiInitializeSecurityContext,
-  ansiIdent = sspiInitializeSecurityContextAnsi, wideIdent = sspiInitializeSecurityContextWide,
+  ansiIdent = sspiInitializeSecurityContextA, wideIdent = sspiInitializeSecurityContextW,
   innerTIdent = LPTStr, innerAnsiIdent = LPStr, innerWideIdent = LPWStr,
   ansiImportC = "InitializeSecurityContextA", wideImportC = "InitializeSecurityContextW"):
   proc sspiInitializeSecurityContext*(
@@ -1952,7 +1952,7 @@ const
   secpkg_options_permanent* = 0x00000001.SecPkg_Options_Flag
 
 ansiWideAllImportC(tIdent = sspiAddSecurityPackage,
-  ansiIdent = sspiAddSecurityPackageAnsi, wideIdent = sspiAddSecurityPackageWide,
+  ansiIdent = sspiAddSecurityPackageA, wideIdent = sspiAddSecurityPackageW,
   innerTIdent = LPTStr, innerAnsiIdent = LPStr, innerWideIdent = LPWStr,
   ansiImportC = "AddSecurityPackageA", wideImportC = "AddSecurityPackageW"):
   proc sspiAddSecurityPackage*(
@@ -1962,7 +1962,7 @@ ansiWideAllImportC(tIdent = sspiAddSecurityPackage,
     ## ref.: https://msdn.microsoft.com/en-us/library/dd401506.aspx
 
 ansiWideAllImportC(tIdent = sspiDeleteSecurityPackage,
-  ansiIdent = sspiDeleteSecurityPackageAnsi, wideIdent = sspiDeleteSecurityPackageWide,
+  ansiIdent = sspiDeleteSecurityPackageA, wideIdent = sspiDeleteSecurityPackageW,
   innerTIdent = LPTStr, innerAnsiIdent = LPStr, innerWideIdent = LPWStr,
   ansiImportC = "DeleteSecurityPackageA", wideImportC = "DeleteSecurityPackageW"):
   proc sspiDeleteSecurityPackage*(
