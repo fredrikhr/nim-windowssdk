@@ -70,6 +70,24 @@
             "problemMatcher": "$tsc-watch"
         },
         {
+            "taskName": "Test",
+            "suppressTaskName": true,
+            "command": "nim",
+            "echoCommand": true,
+            "args": [
+                "compile",
+                "-r",
+                "-o:bin/twindowssdk",
+                "--nimcache:obj",
+                "test/twindowssdk"
+            ],
+            "isTestCommand": true,
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "problemMatcher": "$tsc-watch"
+        },
+        {
             "taskName": "C Reference (VS2017 Community)",
             "suppressTaskName": true,
             "echoCommand": true,

@@ -1,7 +1,8 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "nim.project": [
-        "src/windowssdk.nim"
+        "src/windowssdk.nim",
+        "test/twindowssdk.nim"
     ],
     "nim.lintOnSave": true
 }
