@@ -1,6 +1,7 @@
 import windowssdk / ansiwide
 import windowssdk / anysize_array
 
+import windowssdk / shared / guiddef
 import windowssdk / shared / minwindef
 import windowssdk / shared / sspi
 import windowssdk / shared / windef
