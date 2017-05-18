@@ -3,9 +3,9 @@
 ## | Microsoft Windows
 ## | Copyright (c) Microsoft Corporation.  All rights reserved.
 ##
-##  :File:       guiddef.h
+## :File:       guiddef.h
 ##
-##  :Contents:   GUID definition
+## :Contents:   GUID definition
 ##
 ##
 

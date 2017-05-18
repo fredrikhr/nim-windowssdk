@@ -42,17 +42,12 @@ type Handle* = distinct pointer
 
 type
   LargeInteger* = int64
-  PLargeInteger* = ptr LargeInteger
-
   ULargeInteger* = uint64
-  PULargeInteger* = ptr ULargeInteger
 
-type
   Luid* = object
     ## Locally Unique Identifier
     ## ref.: https://msdn.microsoft.com/en-us/library/aa379261.aspx
     lowPart: uint32
     highPart: int32
-  PLuid* = ptr Luid
 
 type Boolean* = bool
