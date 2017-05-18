@@ -146,15 +146,11 @@ macro ansiWideWhenMultiImportC*(identReplacements: static[openarray[AnsiWideRepl
 ansiImportC, wideImportC: typed, ast: untyped): typed =
   ansiWideWhenProc(identReplacements, ansiImportC, wideImportC, ast)
 
-proc ansiWideAllProc*(outerReplacement: AnsiWideReplacement,
-  innerReplacements: openarray[AnsiWideReplacement],
+proc ansiWideAllProc*(replacements: openarray[AnsiWideReplacement],
   ansiImportC, wideImportC: NimNode, ast: NimNode): NimNode =
-  var allReplacements = newSeq[AnsiWideReplacement](1 + innerReplacements.len)
-  allReplacements[0] = outerReplacement
-  allReplacements[1..innerReplacements.len] = innerReplacements
   newStmtList(
-    ansiWideProc(allReplacements, ansiImportC, wideImportC, ast),
-    ansiWideWhenProc(innerReplacements, ansiImportC, wideImportC, ast)
+    ansiWideProc(replacements, ansiImportC, wideImportC, ast),
+    ansiWideWhenProc([], ansiImportC, wideImportC, ast)
     )
 
 macro ansiWideAll*(tIdent, ansiIdent, wideIdent: untyped,
@@ -179,9 +175,10 @@ macro ansiWideAll*(tIdent, ansiIdent, wideIdent: untyped,
           f1: LPWStr
     ]#
   ]#
-  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
-    [(innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)],
-    nil, nil, ast)
+  ansiWideAllProc([
+    (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+    (innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)
+    ], nil, nil, ast)
 
 macro ansiWideAllImportC*(tIdent, ansiIdent, wideIdent: untyped,
   innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
@@ -201,20 +198,25 @@ macro ansiWideAllImportC*(tIdent, ansiIdent, wideIdent: untyped,
         proc foobar(str: LPWStr) {.importc: "FoobarW".}
     ]#
   ]#
-  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
-    [(innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)],
-    ansiImportC, wideImportC, ast)
+  ansiWideAllProc([
+    (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
+    (innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)
+    ], ansiImportC, wideImportC, ast)
 
 macro ansiWideAllMulti*(tIdent, ansiIdent, wideIdent: untyped,
   innerReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): typed =
-  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
-    innerReplacements, nil, nil, ast)
+  var replacements = newSeq[AnsiWideReplacement](innerReplacements.len + 1)
+  replacements[0] = (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
+  replacements[1..^1] = innerReplacements
+  ansiWideAllProc(replacements, nil, nil, ast)
 
 macro ansiWideAllMultiImportC*(tIdent, ansiIdent, wideIdent: untyped,
   innerReplacements: static[openarray[AnsiWideReplacement]],
   ansiImportC, wideImportC: typed, ast: untyped): typed =
-  ansiWideAllProc((tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
-    innerReplacements, ansiImportC, wideImportC, ast)
+  var replacements = newSeq[AnsiWideReplacement](innerReplacements.len + 1)
+  replacements[0] = (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
+  replacements[1..^1] = innerReplacements
+  ansiWideAllProc(replacements, ansiImportC, wideImportC, ast)
 
 #[
 ansiWideAll(tIdent = StringContainer, ansiIdent = StringContainerA, wideIdent = StringContainerW,
