@@ -30,8 +30,6 @@ type
 
 type
   SecurityStatus* = distinct uint32
-proc `==`*(a, b: SecurityStatus): bool = (a.uint32 == b.uint32)
-proc `!=`*(a, b: SecurityStatus): bool = (a.uint32 != b.uint32)
 
 ansiWideWhen(SecTChar, SecChar, SecWChar):
   type SecurityPStr* = AnySizeArrayPtr[SecTChar]

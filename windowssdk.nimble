@@ -8,6 +8,7 @@ srcDir        = "src"
 
 # Dependencies
 
+requires "importc_distinct >= 0.1.0"
 requires "nim >= 0.17.0"
 
 import strutils

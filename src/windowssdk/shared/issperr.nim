@@ -15,7 +15,7 @@
 ##
 ##
 
-import .. / cdefine_to_string
+import importc_distinct, strutils, unicode
 
 import sspi
 
@@ -110,7 +110,7 @@ const
   sec_e_no_spm* = sec_e_internal_error
   sec_e_bad_pkgid* = sec_e_secpkg_not_found
 
-defineDistinctToStringProc(SecurityStatus, uint32,
+implementDistinctEnum(SecurityStatus, uint32,
   sec_e_insufficient_memory, sec_e_invalid_handle, sec_e_unsupported_function,
   sec_e_target_unknown, sec_e_internal_error, sec_e_secpkg_not_found,
   sec_e_not_owner, sec_e_cannot_install, sec_e_invalid_token, sec_e_cannot_pack,
