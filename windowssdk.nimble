@@ -13,9 +13,9 @@ requires "nim >= 0.17.0"
 import strutils
 
 # Setup
-before build:
+before debugbuild:
   mkDir "bin"
-before buildWithSdk:
+before debugbuildWithSdk:
   mkDir "bin"
 
 before test:
@@ -40,10 +40,10 @@ task docall, "Document srcDir recursively":
   let docDir = "doc"
   recurseDir(srcDir, docDir)
 
-task build, "Builds the Windows SDK bundle":
+task debugbuild, "Builds the Windows SDK bundle":
   exec "nim compile -o:bin/windowssdk --nimcache:obj src/windowssdk"
 
-task buildWithSdk, "Builds the Windows SDK bundle":
+task debugbuildWithSdk, "Builds the Windows SDK bundle":
   exec "nim compile -o:bin/windowssdk --nimcache:obj -d:useWinSdk --dynlibOverride:Secur32.dll --dynlibOverride:SspiCli.dll --dynlibOverride:CredUi.dll --passL:Secur32.lib src/windowssdk"
 
 task test, "Runs the test module":
