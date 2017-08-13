@@ -40,6 +40,9 @@ ansiWideWhen(tIdent = AnsiWideStr, ansiIdent = LPStr, wideIdent = LPWStr):
 type Handle* = distinct pointer
   ## ref.: https://msdn.microsoft.com/en-us/library/aa383751.aspx#HANDLE
 
+type HResult* = distinct int32
+  ## ref.: https://msdn.microsoft.com/en-us/library/aa383751.aspx#HRESULT
+
 type
   LargeInteger* = int64
   ULargeInteger* = uint64
