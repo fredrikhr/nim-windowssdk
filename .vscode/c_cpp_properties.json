@@ -4,6 +4,8 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceRoot}",
+                "C:/Program Files/Nim/lib",
+                "C:/Program Files (x86)/Nim/lib",
                 "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.10.25017/include/*",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/um",
                 "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/ucrt",
@@ -39,6 +41,8 @@
             ],
             "browse": {
                 "path": [
+                    "C:/Program Files/Nim/lib",
+                    "C:/Program Files (x86)/Nim/lib",
                     "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Tools/MSVC/14.10.25017/include/*",
                     "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/um",
                     "C:/Program Files (x86)/Windows Kits/10/Include/10.0.15063.0/ucrt",
