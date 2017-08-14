@@ -26,7 +26,6 @@ macro whenUseWindowsSdk*(ast: untyped): typed =
       whenElseBranch.add(newStmtList(child))
       whenStmt.add(whenTrueBranch)
       whenStmt.add(whenElseBranch)
-      echo whenStmt.repr()
       result[i] = whenStmt
     of nnkVarSection, nnkLetSection, nnkConstSection:
       var windowsSdkVarSection = newNimNode(nnkVarSection)
@@ -68,6 +67,5 @@ macro whenUseWindowsSdk*(ast: untyped): typed =
       whenElseBranch.add(newStmtList(child))
       whenStmt.add(whenTrueBranch)
       whenStmt.add(whenElseBranch)
-      echo whenStmt.repr()
       result[i] = whenStmt
     else: discard
