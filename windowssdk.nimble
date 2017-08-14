@@ -1,6 +1,7 @@
 # Package
 
-version       = "10.0.10240"
+packageName   = "windowssdk"
+version       = "0.1.5"
 author        = "Fredrik H\x9Bis\x91ther Rasch"
 description   = "Windows SDK nimble package"
 license       = "MIT"
@@ -8,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "importc_distinct >= 0.1.0"
+requires "importc_helpers >= 0.2.0"
 requires "nim >= 0.17.0"
 
 import strutils
@@ -29,6 +30,7 @@ task docall, "Document srcDir recursively":
     for srcFile in listFiles(srcDir):
       if not srcFile.endsWith(".nim"):
         echo "skipping non nim file: $#" % [srcFile]
+        continue
       let docFile = docDir & srcFile[srcDir.len..^5] & ".html"
       echo "file: $# -> $#" % [srcFile, docFile]
       exec "nim doc2 $# -o:\"$#\" \"$#\"" % [nimOpts, docFile, srcFile]

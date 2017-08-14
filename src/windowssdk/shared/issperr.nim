@@ -15,7 +15,7 @@
 ##
 ##
 
-import importc_distinct, strutils, unicode
+import importc_helpers, strutils, unicode
 
 import sspi
 
