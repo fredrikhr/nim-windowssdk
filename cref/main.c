@@ -8,10 +8,10 @@
 
 int main(int argc, char* argv[])
 {
-	const int size = sizeof(HRESULT);
+	const int size = sizeof(CLSCTX);
 	const auto v = IID_IUnknown;
 
-	void* ptr = AcquireCredentialsHandle;
+	void* ptr = CoInitialize;
 
 	return EXIT_SUCCESS;
 }
