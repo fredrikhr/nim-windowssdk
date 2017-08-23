@@ -11,12 +11,11 @@
 
 
 import unknwn
-import winnt
-import .. / shared / guiddef, .. / shared / wtypesbase
+import .. / shared / guiddef, .. / shared / wtypesbase, .. / shared / winerror
 
 import dynlib
 
-proc newComInstance*(
+proc coCreateInstance*(
   rclsid: ptr ClsId,
   pUnkOuter: ptr IUnknown,
   dwClsContext: ClsCtx,

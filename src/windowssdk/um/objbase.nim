@@ -1,8 +1,8 @@
-import winnt
+import .. / shared / winerror
 
 import dynlib
 
-proc comInitialize(pvReserved: pointer): HResult {.stdcall, importc: "CoInitialize", dynlib: "Ole32.dll".}
+proc coInitialize(pvReserved: pointer): HResult {.stdcall, importc: "CoInitialize", dynlib: "Ole32.dll".}
   ## ref.: https://msdn.microsoft.com/en-us/library/ms678543.aspx
-proc comInitialize*(): HResult = comInitialize(nil)
+proc coInitialize*(): HResult = coInitialize(nil)
   ## ref.: https://msdn.microsoft.com/en-us/library/ms678543.aspx

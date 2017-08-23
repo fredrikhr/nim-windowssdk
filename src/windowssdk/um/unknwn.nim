@@ -1,5 +1,5 @@
 import .. / shared / guiddef
-import winnt
+import .. / shared / winerror
 import .. / importc_windowssdk
 
 when defined(useWindowsSdk):

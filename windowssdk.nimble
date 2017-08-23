@@ -9,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "importc_helpers >= 0.2.0"
+requires "importc_helpers >= 0.2.1"
 requires "nim >= 0.17.0"
 
 import strutils
