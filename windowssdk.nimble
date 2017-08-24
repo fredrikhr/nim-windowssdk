@@ -1,7 +1,7 @@
 # Package
 
 packageName   = "windowssdk"
-version       = "0.1.5"
+version       = "0.1.6"
 author        = "Fredrik H\x9Bis\x91ther Rasch"
 description   = "Windows SDK nimble package"
 license       = "MIT"
@@ -9,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "importc_helpers >= 0.2.1"
+requires "importc_helpers >= 0.2.2"
 requires "nim >= 0.17.0"
 
 import strutils
