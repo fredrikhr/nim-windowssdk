@@ -9,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "importc_helpers >= 0.2.2"
+requires "importc_helpers >= 0.2.3"
 requires "nim >= 0.17.0"
 
 import strutils
@@ -47,10 +47,10 @@ task debugbuild, "Builds the Windows SDK bundle":
   exec "nim compile -o:bin/windowssdk --nimcache:obj src/windowssdk"
 
 task debugbuildWithSdk, "Builds the Windows SDK bundle":
-  exec "nim compile -o:bin/windowssdk --nimcache:obj -d:useWinSdk --dynlibOverride:Secur32.dll --dynlibOverride:SspiCli.dll --dynlibOverride:CredUi.dll --passL:Secur32.lib src/windowssdk"
+  exec "nim compile -o:bin/windowssdk --nimcache:obj -d:useWinSdk --dynlibOverride:Secur32.dll --dynlibOverride:SspiCli.dll --dynlibOverride:CredUi.dll --dynlibOverride:ole32.dll --passL:Secur32.lib --passL:Ole32.lib src/windowssdk"
 
 task test, "Runs the test module":
   exec "nim compile -r -o:bin/twindowssdk --nimcache:obj test/twindowssdk"
 
 task testWithSdk, "Runs the test module":
-  exec "nim compile -r -o:bin/twindowssdk --nimcache:obj -d:useWinSdk --dynlibOverride:Secur32.dll --dynlibOverride:SspiCli.dll --dynlibOverride:CredUi.dll --passL:Secur32.lib test/twindowssdk"
+  exec "nim compile -r -o:bin/twindowssdk --nimcache:obj -d:useWinSdk --dynlibOverride:Secur32.dll --dynlibOverride:SspiCli.dll --dynlibOverride:CredUi.dll --dynlibOverride:ole32.dll --passL:Secur32.lib --passL:Ole32.lib test/twindowssdk"

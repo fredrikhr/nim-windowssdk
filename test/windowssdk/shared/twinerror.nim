@@ -1,7 +1,7 @@
 import .. / .. / .. / src / windowssdk / shared / winerror
 
 block `WinError.$`:
-  assert($ error_success == "ERROR_SUCCESS", $ error_success)
+  assert($ error_success == "error_success", $ error_success)
 
 block `HResult.$`:
-  assert($ e_notimpl == "E_NOTIMPL", $e_notimpl)
+  assert($ e_notimpl == "e_notimpl", $e_notimpl)
