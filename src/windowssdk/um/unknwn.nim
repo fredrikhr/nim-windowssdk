@@ -9,17 +9,17 @@ else:
 
 whenUseWindowsSdk:
   {.importc: "IID_IUnknown", sdkHeader.}
-  const iid_IUnknown* : Iid = Iid(data1: 0x00000000, data2: 0x0000, data3: 0x0000, data4: [0xC0'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x46'u8])
+  var iid_IUnknown*: Iid = newIid("00000000-0000-0000-C000-000000000046")
 
 type
   IUnknownVtbl* = object
-    queryInterface: proc(this: ptr IUnknown, riid: ptr Iid, ppvObject: pointer): HResult {.stdcall.}
+    queryInterface: proc(this: ptr IUnknown, riid: ptr Iid, ppvObject: var pointer): HResult {.stdcall.}
     addRef: proc(this: ptr IUnknown): HResult {.stdcall.}
     release: proc(this: ptr IUnknown): HResult {.stdcall.}
   IUnknown* = object
     lpVtbl: ptr IUnknownVtbl
 
-proc queryInterface*(this: ptr IUnknown, riid: ptr Iid, ppvObject: pointer): HResult = 
+proc queryInterface*(this: ptr IUnknown, riid: ptr Iid, ppvObject: var pointer): HResult = 
   this.lpVtbl.queryInterface(this, riid, ppvObject)
 proc addRef*(this: ptr IUnknown): HResult = 
   this.lpVtbl.addRef(this)
@@ -28,13 +28,13 @@ proc release*(this: ptr IUnknown): HResult =
 
 whenUseWindowsSdk:
   {.importc: "IID_AsyncIUnknown", sdkHeader.}
-  const iid_AsyncIUnknown* : Iid = Iid(data1: 0x000e0000, data2: 0x0000, data3: 0x0000, data4: [0xC0'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x00'u8, 0x46'u8])
+  var iid_AsyncIUnknown* : Iid = newIid("000e0000-0000-0000-C000-000000000046")
 
 type
   AsyncIUnknownVtbl* = object
     vtbl_IUnknown: IUnknownVtbl
     begin_QueryInterface: proc(this: ptr AsyncIUnknown, riid: ptr Iid): HResult {.stdcall.}
-    finish_QueryInterface: proc(this: ptr AsyncIUnknown, ppvObject: pointer): HResult {.stdcall.}
+    finish_QueryInterface: proc(this: ptr AsyncIUnknown, ppvObject: var pointer): HResult {.stdcall.}
     begin_AddRef: proc(this: ptr AsyncIUnknown): HResult {.stdcall.}
     finish_AddRef: proc(this: ptr AsyncIUnknown): HResult {.stdcall.}
     begin_Release: proc(this: ptr AsyncIUnknown): HResult {.stdcall.}
@@ -46,7 +46,7 @@ converter toIUnknown*(x: ptr AsyncIUnknown): ptr IUnknown = cast[ptr IUnknown](x
 
 proc begin_QueryInterface*(this: ptr AsyncIUnknown, riid: ptr Iid): HResult =
   this.lpVtbl.begin_QueryInterface(this, riid)
-proc finish_QueryInterface*(this: ptr AsyncIUnknown, ppvObject: pointer): HResult =
+proc finish_QueryInterface*(this: ptr AsyncIUnknown, ppvObject: var pointer): HResult =
   this.lpVtbl.finish_QueryInterface(this, ppvObject)
 proc begin_AddRef*(this: ptr AsyncIUnknown): HResult =
   this.lpVtbl.begin_AddRef(this)
