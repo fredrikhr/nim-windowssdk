@@ -15,6 +15,14 @@ import .. / shared / guiddef, .. / shared / wtypesbase, .. / shared / winerror
 
 import dynlib
 
+proc coGetClassObject*(
+  rclsid: ptr ClsId,
+  dwClsContext: ClsCtx,
+  pvReserved: pointer,
+  riid: ptr Iid,
+  ppv: var pointer
+  ): HResult {.stdcall, importc: "CoGetClassObject", dynlib: "Ole32.dll".}
+
 proc coCreateInstance*(
   rclsid: ptr ClsId,
   pUnkOuter: ptr IUnknown,

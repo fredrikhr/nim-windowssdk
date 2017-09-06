@@ -11,8 +11,7 @@ int main(int argc, char* argv[])
 	const int size = sizeof(CLSCTX);
 	const auto v = _NDIS_ERROR_TYPEDEF_(0x80340002L);
 
-	void* ptr = CoInitialize;
+	void* ptr = CoGetClassObject;
 
 	return EXIT_SUCCESS;
 }
-
