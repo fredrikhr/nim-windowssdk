@@ -49,7 +49,7 @@ proc release*(this: ptr IUnknown) =
 
 whenUseWindowsSdk:
   {.importc: "IID_AsyncIUnknown", sdkHeader.}
-  var iid_AsyncIUnknown* : Iid = newIid("000e0000-0000-0000-C000-000000000046")
+  const iid_AsyncIUnknown* : Iid = newIid("000e0000-0000-0000-C000-000000000046")
 
 type
   AsyncIUnknownVtbl* = object
