@@ -6,45 +6,45 @@
 ##                                                                       ##
 ###########################################################################
 
-##
-## Note: There is a slightly modified layout for HRESULT values below,
-##        after the heading "COM Error Codes".
-##
-## Search for "**** Available SYSTEM error codes ****" to find where to
-## insert new error codes
-##
-##  Values are 32 bit values laid out as follows:
-##
-##   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
-##   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
-##  +-+-+-+-+-+---------------------+-------------------------------+
-##  |S|R|C|N|r|    Facility         |               Code            |
-##  +-+-+-+-+-+---------------------+-------------------------------+
-##
-##  where
-##
-##      S - Severity - indicates success/fail
-##
-##          0 - Success
-##          1 - Fail (COERROR)
-##
-##      R - reserved portion of the facility code, corresponds to NT's
-##              second severity bit.
-##
-##      C - reserved portion of the facility code, corresponds to NT's
-##              C field.
-##
-##      N - reserved portion of the facility code. Used to indicate a
-##              mapped NT status value.
-##
-##      r - reserved portion of the facility code. Reserved for internal
-##              use. Used to indicate HRESULT values that are not status
-##              values, but are instead message ids for display strings.
-##
-##      Facility - is the facility code
-##
-##      Code - is the facility's status code
-##
+#
+# Note: There is a slightly modified layout for HRESULT values below,
+#        after the heading "COM Error Codes".
+#
+# Search for "**** Available SYSTEM error codes ****" to find where to
+# insert new error codes
+#
+#  Values are 32 bit values laid out as follows:
+#
+#   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
+#   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
+#  +-+-+-+-+-+---------------------+-------------------------------+
+#  |S|R|C|N|r|    Facility         |               Code            |
+#  +-+-+-+-+-+---------------------+-------------------------------+
+#
+#  where
+#
+#      S - Severity - indicates success/fail
+#
+#          0 - Success
+#          1 - Fail (COERROR)
+#
+#      R - reserved portion of the facility code, corresponds to NT's
+#              second severity bit.
+#
+#      C - reserved portion of the facility code, corresponds to NT's
+#              C field.
+#
+#      N - reserved portion of the facility code. Used to indicate a
+#              mapped NT status value.
+#
+#      r - reserved portion of the facility code. Reserved for internal
+#              use. Used to indicate HRESULT values that are not status
+#              values, but are instead message ids for display strings.
+#
+#      Facility - is the facility code
+#
+#      Code - is the facility's status code
+#
 
 import importc_helpers, macros, strutils
 
@@ -3139,7 +3139,7 @@ conditionalStringify(WinError):
       ## Invalid message box style.
 
     error_invalid_spi_value* =           1439.WinError
-      ## Invalid system-wide (SPI_*) parameter.
+      ## Invalid system-wide (`SPI_*`) parameter.
 
     error_screen_already_locked* =       1440.WinError
       ## Screen already locked.
@@ -10011,11 +10011,11 @@ conditionalStringify(WinError):
     store_error_license_revoked* =       15864.WinError
       ## The license has been revoked for this user.
 
-###################################
+#--------------------------------##
 #                                ##
 #     COM Error Codes            ##
 #                                ##
-###################################
+#--------------------------------##
 
 
 #
@@ -14171,7 +14171,7 @@ conditionalStringify(HResult):
       ## Access to the specified partition is denied.
 
     comadmin_e_partition_msi_only* =    0x80110819.HResult
-      ## Only Application Files (*.MSI files) can be installed into partitions.
+      ## Only Application Files (`*.MSI` files) can be installed into partitions.
 
     comadmin_e_legacycomps_not_allowed_in_1_0_format* = 0x8011081A.HResult
       ## Applications containing one or more legacy components may not be exported to 1.0 format.
