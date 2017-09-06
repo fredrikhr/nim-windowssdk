@@ -65,4 +65,4 @@ const
   clsctx_ps_dll* = 0x80000000.ClsCtx
     ## Used for loading Proxy/Stub DLLs.
     ##
-    ## **Note** This flag is reserved for internal use and is not intended to be used directly from your code.
+    ## Note: This flag is reserved for internal use and is not intended to be used directly from your code.
