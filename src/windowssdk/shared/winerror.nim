@@ -46,7 +46,54 @@
 ##      Code - is the facility's status code
 ##
 
-import os, importc_helpers, unicode
+import importc_helpers, macros, strutils
+
+proc getDistinctAndBaseSym(t: typedesc): tuple[`distinct`, base: NimNode] {.compileTime.} =
+  var beD = t.getType()
+  beD.expectKind(nnkBracketExpr)
+  beD.expectMinLen(2)
+  let dSym = beD[1]
+  dSym.expectKind(nnkSym)
+  let beB = dSym.getType()
+  beB.expectKind(nnkBracketExpr)
+  beB.expectMinLen(2)
+  let bSym = beB[1]
+  result = (dSym, bSym)
+
+proc createBorrowInfixOperator(`distinct`, base: NimNode, op: string, returnType: NimNode = ident("bool"), exportable: bool = true, docString: string = nil): NimNode =
+  let
+    leftArgIdent = ident("a")
+    rightArgIdent = ident("b")
+    leftBaseValue = newDotExpr(leftArgIdent, base) # a.base
+    rightBaseValue = newDotExpr(rightArgIdent, base) # b.base
+    argsIdentDefs = newNimNode(nnkIdentDefs).add(leftArgIdent, rightArgIdent, `distinct`, newEmptyNode())
+  var procBody = infix(leftBaseValue, op, rightBaseValue)
+  if docString.len > 0:
+    var docComment = newNimNode(nnkCommentStmt)
+    # docComment.strVal = docComment
+    procBody = newStmtList(docComment, procBody)
+  var procName = newNimNode(nnkAccQuoted).add(ident(op))
+  if exportable: procName = postfix(procName, "*")
+  result = newProc(
+    name = procName, params = [returnType, argsIdentDefs],
+    body = procBody)
+
+macro implementDistinctEnumEqual(typ: typedesc): typed =
+  let
+    typedescTuple = getDistinctAndBaseSym(typ)
+    distinctSym = typedescTuple.`distinct`
+    baseSym = typedescTuple.base
+  result = newStmtList()
+  result.add(createBorrowInfixOperator(distinctSym, baseSym, "==", docString = "Equality (``==``) " &
+    "operator for the $1 type. Comparison is done by converting both the left and right argument to " &
+    "the $2 type and calling the ``==`` operator for the $2 type.".format(distinctSym, baseSym)))
+
+template conditionalStringify(typ: typedesc, knownValueDecl: untyped): typed =
+  when defined(useWinErrorStringify):
+    implementDistinctEnum(typ, knownValueDecl)
+  else:
+    knownValueDecl
+    implementDistinctEnumEqual(typ)
 
 type HResult* = distinct uint32
   ## ref.: https://msdn.microsoft.com/en-us/library/aa383751.aspx#HRESULT
@@ -57,7 +104,7 @@ converter toOSErrorCode*(x: HResult): OSErrorCode = cast[OSErrorCode](x)
 # Define the facility codes
 #
 type FacilityCode* = distinct int16
-implementDistinctEnum(FacilityCode):
+conditionalStringify(FacilityCode):
   const
     facility_xps* =                     82.FacilityCode
     facility_xbox* =                    2339.FacilityCode
@@ -202,7 +249,7 @@ implementDistinctEnum(FacilityCode):
 # Define the severity codes
 #
 type WinError* = distinct uint32
-implementDistinctEnum(WinError):
+conditionalStringify(WinError):
   const
     error_success* =                     0.WinError
       ## The operation completed successfully.
@@ -10070,7 +10117,7 @@ converter toHResult*(x: NTStatus): HResult =
   (x.int32 or facility_nt_bit).HResult
 ]#
 
-implementDistinctEnum(HResult):
+conditionalStringify(HResult):
   const
     sec_e_ok* = 0x00000000.HResult
     
