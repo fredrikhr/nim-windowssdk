@@ -1,7 +1,7 @@
 # Package
 
 packageName   = "windowssdk"
-version       = "0.1.7"
+version       = "0.1.8"
 author        = "Fredrik H\x9Bis\x91ther Rasch"
 description   = "Windows SDK nimble package"
 license       = "MIT"
