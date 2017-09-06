@@ -73,7 +73,7 @@ proc ansiWideProc(identReplacements: openarray[AnsiWideReplacement],
     modifyAstRecursive(replacements.ansi, ast, ansiImportC),
     modifyAstRecursive(replacements.wide, ast, wideImportC)
   )
-  when not(defined(release)) or defined(debug):
+  when defined(debugAnsiWide):
     echo result.repr
 
 macro ansiWide*(tIdent, ansiIdent, wideIdent: untyped,
@@ -125,7 +125,7 @@ proc ansiWideWhenProc(identReplacements: openarray[AnsiWideReplacement],
   wideBranch.add(wideBody)
   whenStmt.add(ansiBranch, wideBranch)
   result = newStmtList(whenStmt)
-  when not(defined(release)) or defined(debug):
+  when defined(debugAnsiWide):
     echo result.repr
 
 macro ansiWideWhen*(tIdent: untyped, ansiIdent, wideIdent: typed, ast: untyped): typed =
