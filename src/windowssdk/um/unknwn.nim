@@ -25,11 +25,6 @@ proc queryInterface*(this: ptr IUnknown, riid: ptr Iid, ppvObject: var pointer):
   this.lpVtbl.queryInterface(this, riid, ppvObject)
 proc queryInterface*(this: ptr IUnknown, iid: Iid, ppvObject: var pointer): HResult =
   queryInterface(this, iid.unsafeAddr, ppvObject)
-proc queryInterface*(this: ptr IUnknown, riid: ptr Iid): pointer =
-  let hr = queryInterface(this, riid, result)
-  if hr.failed: raiseOSError(hr)
-proc queryInterface*(this: ptr IUnknown, iid: Iid): pointer =
-  queryInterface(this, iid.unsafeAddr)
 proc queryInterface*[T](this: ptr IUnknown, riid: ptr Iid, pptObject: var ptr T): HResult =
   var ppvObject: pointer
   result = queryInterface(this, riid, ppvObject)
