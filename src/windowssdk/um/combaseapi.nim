@@ -13,7 +13,7 @@
 import unknwn
 import .. / shared / guiddef, .. / shared / wtypesbase, .. / shared / winerror
 
-import dynlib
+import os, dynlib
 
 proc coGetClassObject*(
   rclsid: ptr ClsId,
@@ -65,6 +65,16 @@ proc coGetClassObject*[T](
   result = coGetClassObject(clsid.unsafeAddr, dwClsContext, nil, iid.unsafeAddr, ppv)
   ppt = cast[ptr T](ppv)
 
+proc coGetClassObject*[T](rclsid: ptr ClsId, clsContext: ClsCtx, pvReserved: pointer, riid: ptr Iid): ptr T {.raises: [OSError].} =
+  let hr = coGetClassObject[T](rclsid, clsContext, pvReserved, riid, result)
+  if hr.failed: raiseOSError(hr)
+proc coGetClassObject*[T](rclsid: ptr ClsId, clsContext: ClsCtx, riid: ptr Iid): ptr T =
+  coGetClassObject[T](rclsid, clsContext, nil, riid)
+proc coGetClassObject*[T](clsid: ClsId, clsContext: ClsCtx, pvReserved: pointer, iid: Iid): ptr T =
+  coGetClassObject[T](clsid.unsafeAddr, clsContext, pvReserved, iid.unsafeAddr)
+proc coGetClassObject*[T](clsid: ClsId, clsContext: ClsCtx, iid: Iid): ptr T =
+  coGetClassObject[T](clsid.unsafeAddr, clsContext, nil, iid.unsafeAddr)
+
 proc coCreateInstance*(
   rclsid: ptr ClsId,
   pUnkOuter: ptr IUnknown,
@@ -114,3 +124,11 @@ proc coCreateInstance*[T](
   var ppv: pointer
   result = coCreateInstance(clsid.unsafeAddr, nil, dwClsContext, iid.unsafeAddr, ppv)
   ppt = cast[ptr T](ppv)
+
+proc coCreateInstance*[T](rclsid: ptr ClsId, pUnkOuter: ptr IUnknown, clsContext: ClsCtx, riid: ptr Iid): ptr T {.raises: [OSError].} =
+  let hr = coCreateInstance[T](rclsid, pUnkOuter, clsContext, riid, result)
+  if hr.failed: raiseOSError(hr)
+proc coCreateInstance*[T](clsid: ClsId, pUnkOuter: ptr IUnknown, clsContext: ClsCtx, iid: Iid): ptr T =
+  coCreateInstance[T](clsid.unsafeAddr, pUnkOuter, clsContext, iid.unsafeAddr)
+proc coCreateInstance*[T](clsid: ClsId, clsContext: ClsCtx, iid: Iid): ptr T =
+  coCreateInstance[T](clsid.unsafeAddr, nil, clsContext, iid.unsafeAddr)
