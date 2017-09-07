@@ -10325,8 +10325,8 @@ implementDistinctEnum(HResult):
     #
     # Success codes
     #
-  #define S_OK                                   ((HRESULT)0L)
-  #define S_FALSE                                ((HRESULT)1L)
+    s_ok* =                                   0.HResult
+    s_false* =                                1.HResult
 
     # ******************
     # FACILITY_ITF
@@ -10342,10 +10342,10 @@ implementDistinctEnum(HResult):
     # Generic OLE errors that may be returned by many inerfaces
     #
 
-  #define OLE_E_FIRST ((HRESULT)0x80040000L)
-  #define OLE_E_LAST  ((HRESULT)0x800400FFL)
-  #define OLE_S_FIRST ((HRESULT)0x00040000L)
-  #define OLE_S_LAST  ((HRESULT)0x000400FFL)
+    ole_e_first* = 0x80040000.HResult
+    ole_e_last* =  0x800400FF.HResult
+    ole_s_first* = 0x00040000.HResult
+    ole_s_last* =  0x000400FF.HResult
 
     #
     # Old OLE errors
