@@ -46,10 +46,12 @@
 ##      Code - is the facility's status code
 ##
 
-import importc_helpers, unicode
+import os, importc_helpers, unicode
 
 type HResult* = distinct uint32
   ## ref.: https://msdn.microsoft.com/en-us/library/aa383751.aspx#HRESULT
+
+converter toOSErrorCode*(x: HResult): OSErrorCode = cast[OSErrorCode](x)
 
 #
 # Define the facility codes
