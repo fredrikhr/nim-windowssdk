@@ -46,7 +46,7 @@
 #      Code - is the facility's status code
 #
 
-import importc_helpers, macros, strutils
+import importc_helpers, macros, os, strutils
 
 proc getDistinctAndBaseSym(t: typedesc): tuple[`distinct`, base: NimNode] {.compileTime.} =
   var beD = t.getType()

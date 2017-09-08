@@ -21,16 +21,12 @@ type
   IUnknown* = object
     lpVtbl: ptr IUnknownVtbl
 
-proc queryInterface*(this: ptr IUnknown, riid: ptr Iid, ppvObject: var pointer): HResult = 
-  this.lpVtbl.queryInterface(this, riid, ppvObject)
-proc queryInterface*(this: ptr IUnknown, iid: Iid, ppvObject: var pointer): HResult =
-  queryInterface(this, iid.unsafeAddr, ppvObject)
-proc queryInterface*[T](this: ptr IUnknown, riid: ptr Iid, pptObject: var ptr T): HResult =
+proc queryInterface*[T](this: ptr IUnknown, riid: ptr Iid, pptInstance: var ptr T): HResult =
   var ppvObject: pointer
-  result = queryInterface(this, riid, ppvObject)
-  pptObject = cast[ptr T](ppvObject)
-proc queryInterface*[T](this: ptr IUnknown, iid: Iid, pptObject: var ptr T): HResult =
-  queryInterface[T](this, iid.unsafeAddr, pptObject)
+  result = this.lpVtbl.queryInterface(this, riid, ppvObject)
+  pptInstance = cast[ptr T](ppvObject)
+proc queryInterface*[T](this: ptr IUnknown, iid: Iid, pptInstance: var ptr T): HResult =
+  queryInterface[T](this, iid.unsafeAddr, pptInstance)
 proc queryInterface*[T](this: ptr IUnknown, riid: ptr Iid): ptr T =
   let hr = queryInterface[T](this, riid, result)
   if hr.failed: raiseOSError(hr)
@@ -69,15 +65,8 @@ proc begin_QueryInterface*(this: ptr AsyncIUnknown, riid: ptr Iid): HResult =
   this.lpVtbl.begin_QueryInterface(this, riid)
 proc begin_QueryInterface*(this: ptr AsyncIUnknown, iid: Iid): HResult =
   begin_QueryInterface(this, iid.unsafeAddr)
-proc finish_QueryInterface*(this: ptr AsyncIUnknown, ppvObject: var pointer): HResult =
-  this.lpVtbl.finish_QueryInterface(this, ppvObject)
-proc finish_QueryInterface*(this: ptr AsyncIUnknown): pointer =
-  let hr = finish_QueryInterface(this, result)
-  if hr.failed: raiseOSError(hr)
-proc finish_QueryInterface*[T](this: ptr AsyncIUnknown, pptObject: var ptr T): HResult =
-  var ppvObject: pointer
-  result = finish_QueryInterface(this, ppvObject)
-  pptObject = cast[ptr T](ppvObject)
+proc finish_QueryInterface*[T](this: ptr AsyncIUnknown, pptInstance: var ptr T): HResult =
+  this.lpVtbl.finish_QueryInterface(this, pptInstance)
 proc finish_QueryInterface*[T](this: ptr AsyncIUnknown): ptr T =
   let hr = finish_QueryInterface[T](this, result)
   if hr.failed: raiseOSError(hr)
