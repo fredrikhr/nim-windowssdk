@@ -1,5 +1,13 @@
 import importc_helpers
 
+type Filetime* = object
+  ## Contains a 64-bit value representing the number of 100-nanosecond
+  ## intervals since January 1, 1601 (UTC).
+  ##
+  ## ref.: https://msdn.microsoft.com/en-us/library/ms724284.aspx
+  lowDateTime: uint32  ## The low-order part of the file time.
+  highDateTime: uint32 ## The high-order part of the file time.
+
 type ClsCtx* = distinct int32
   ## ref.: https://msdn.microsoft.com/en-us/library/ms693716.aspx
 implementDistinctFlags(ClsCtx):
