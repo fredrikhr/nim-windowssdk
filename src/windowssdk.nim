@@ -8,6 +8,7 @@ import windowssdk / shared / minwindef
 import windowssdk / shared / sspi
 import windowssdk / shared / windef
 import windowssdk / shared / winerror
+import windowssdk / shared / wtypes
 import windowssdk / shared / wtypesbase
 
 import windowssdk / um / combaseapi
