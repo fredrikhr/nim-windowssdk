@@ -9,7 +9,7 @@ type
 type Variant_Bool* = distinct int16
 implementDistinctEnum(Variant_Bool):
   const
-    variant_true* = 0xFFFF.Variant_Bool ## MUST indicate a Boolean value of true.
-    variant_false* = 0xFFFF.Variant_Bool ## MUST indicate a Boolean value of false.
+    variant_true* = (-1).Variant_Bool ## MUST indicate a Boolean value of true.
+    variant_false* = 0.Variant_Bool ## MUST indicate a Boolean value of false.
 converter toBool*(v: Variant_Bool): bool = (v.int16 != 0)
 converter toVariantBool*(b: bool): Variant_Bool = (if b: variant_true else: variant_false)
