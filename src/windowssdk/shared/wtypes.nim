@@ -6,6 +6,13 @@ type
   LangId* = distinct uint32
     ## ref.: https://msdn.microsoft.com/en-us/library/aa383751.aspx#LANGID
 
+type BStr* = distinct WideCString
+  ## A BSTR (Basic string or binary string) is a string data type that is used
+  ## by COM, Automation, and Interop functions. Use the BSTR data type in all
+  ## interfaces that will be accessed from script.
+  ##
+  ## ref.: https://msdn.microsoft.com/en-us/library/ms221069.aspx
+
 type Variant_Bool* = distinct int16
 implementDistinctEnum(Variant_Bool):
   const
