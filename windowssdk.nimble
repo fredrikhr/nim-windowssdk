@@ -9,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "importc_helpers >= 0.2.6"
+requires "https://github.com/couven92/nim-importc-helpers"
 requires "nim >= 0.17.1"
 
 import strutils
