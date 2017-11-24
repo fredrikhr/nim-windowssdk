@@ -65,7 +65,7 @@ implementDistinctFlags(ClsCtx):
       ## Specify this flag for Interactive User activation behavior for As-Activator servers. A strongly named Medium IL Windows Store app can use this flag to launch an "As Activator" COM server without a strong name. Also, you can use this flag to bind to a running instance of the COM server that's launched by a desktop application.
       ##
       ## The client must be Medium IL, it must be strongly named, which means that it has a SysAppID in the client token, it can't be in session 0, and it must have the same user as the session ID's user in the client token. If the server is out-of-process and "As Activator", it launches the server with the token of the client token's session user. This token won't be strongly named. If the server is out-of-process and RunAs "Interactive User", this flag has no effect. If the server is out-of-process and is any other RunAs type, the activation fails. This flag has no effect for in-process servers. Off-machine activations fail when they use this flag.
-    clsctx_ps_dll* = 0x80000000'i32.ClsCtx
+    clsctx_ps_dll {.used.} = 0x80000000'i32.ClsCtx
       ## Used for loading Proxy/Stub DLLs.
       ##
       ## Note: This flag is reserved for internal use and is not intended to be used directly from your code.
