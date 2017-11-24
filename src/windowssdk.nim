@@ -12,6 +12,7 @@ import windowssdk / shared / wtypes
 import windowssdk / shared / wtypesbase
 
 import windowssdk / um / combaseapi
+import windowssdk / um / oaidl
 import windowssdk / um / objbase
 import windowssdk / um / oleauto
 import windowssdk / um / unknwn
