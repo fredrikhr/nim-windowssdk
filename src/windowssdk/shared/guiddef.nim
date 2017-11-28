@@ -17,12 +17,6 @@ type Guid* = object
 
 const guid_size = sizeof(uint32) + 2 * sizeof(uint16) + 8 * sizeof(byte)
 
-template define_Guid*(name: untyped, long: uint32, w1, w2: uint16, b1, b2, b3, b4, b5, b6, b7, b8: byte): typed =
-  const name* = Guid(data1: long, data2: w1, data3: w2, data4: [b1, b2, b3, b4, b5, b6, b7, b8])
-
-template define_OleGuid*(name: untyped, long: uint32, w1, w2: uint16): typed =
-  const name* = Guid(data1: long, data2: w1, data3: w2, data4: [0xC0, 0, 0, 0, 0, 0, 0, 0x46])
-
 type Iid* = Guid
 type ClsId* = Guid
 type FmtId* = Guid
@@ -56,7 +50,7 @@ proc newGuid*(guid: string): Guid {.compileTime.} =
     inc i
   j = 0
   proc convertToValue[T: (uint32 | uint16 | byte)](bytes: openarray[byte], i: var int): T =
-    let
+    const
       size = sizeof(T)
       hexes = size * 2
     for j in 0 ..< hexes:
