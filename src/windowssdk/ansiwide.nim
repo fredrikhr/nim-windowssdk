@@ -5,12 +5,10 @@ type
   AnsiWideReplacement = tuple[src, ansi, wide: string]
 
 proc getIdentOrSymString(n: NimNode): string =
-  if n.isNil(): return nil
+  if n.isNil(): return
   case n.kind
-  of nnkIdent:
-    result = $n.ident
-  of nnkSym:
-    result = $n.symbol
+  of nnkIdent, nnkSym:
+    result = n.strVal()
   else:
     expectKind(n, {nnkIdent, nnkSym})
 
@@ -78,7 +76,7 @@ proc ansiWideProc(identReplacements: openarray[AnsiWideReplacement],
 
 macro ansiWide*(tIdent, ansiIdent, wideIdent: untyped,
   innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
-  ast: untyped): typed =
+  ast: untyped): untyped =
   #[
     ansiWide(tIdent = StringContainer, ansiIdent = StringContainerA, wideIdent = StringContainerW,
       innerTIdent = LPTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString):
@@ -99,17 +97,17 @@ macro ansiWide*(tIdent, ansiIdent, wideIdent: untyped,
 
 macro ansiWideImportC*(tIdent, ansiIdent, wideIdent: untyped,
   innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
-  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiImportC, wideImportC: typed, ast: untyped): untyped =
   ansiWideProc([
       (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString),
       (innerTIdent.getIdentOrSymString, innerAnsiIdent.getIdentOrSymString, innerWideIdent.getIdentOrSymString)
     ], ansiImportC, wideImportC, ast)
 
-macro ansiWideMulti*(identReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): typed =
+macro ansiWideMulti*(identReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): untyped =
   ansiWideProc(identReplacements, nil, nil, ast)
 
 macro ansiWideMultiImportC*(identReplacements: static[openarray[AnsiWideReplacement]],
-  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiImportC, wideImportC: typed, ast: untyped): untyped =
   ansiWideProc(identReplacements, ansiImportC, wideImportC, ast)
 
 proc ansiWideWhenProc(identReplacements: openarray[AnsiWideReplacement],
@@ -117,7 +115,7 @@ proc ansiWideWhenProc(identReplacements: openarray[AnsiWideReplacement],
   let replacements = unpackAnsiWideReplacements(identReplacements)
   var whenStmt = newNimNode(nnkWhenStmt)
   var ansiBranch = newNimNode(nnkElifBranch)
-  var ansiCond = newCall(!"defined", newIdentNode("useWinAnsi"))
+  var ansiCond = newCall("defined", newIdentNode("useWinAnsi"))
   var ansiBody = modifyAstRecursive(replacements.ansi, ast, ansiImportC)
   ansiBranch.add(ansiCond, ansiBody)
   var wideBranch = newNimNode(nnkElse)
@@ -128,22 +126,22 @@ proc ansiWideWhenProc(identReplacements: openarray[AnsiWideReplacement],
   when defined(debugAnsiWide):
     echo result.repr
 
-macro ansiWideWhen*(tIdent: untyped, ansiIdent, wideIdent: typed, ast: untyped): typed =
+macro ansiWideWhen*(tIdent: untyped, ansiIdent, wideIdent: typed, ast: untyped): untyped =
   ansiWideWhenProc([
       (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
     ], nil, nil, ast)
 
 macro ansiWideWhenImportC*(tIdent: untyped, ansiIdent, wideIdent: typed,
-  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiImportC, wideImportC: typed, ast: untyped): untyped =
   ansiWideWhenProc([
       (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
     ], ansiImportC, wideImportC, ast)
 
-macro ansiWideWhenMulti*(identReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): typed =
+macro ansiWideWhenMulti*(identReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): untyped =
   ansiWideWhenProc(identReplacements, nil, nil, ast)
 
 macro ansiWideWhenMultiImportC*(identReplacements: static[openarray[AnsiWideReplacement]],
-ansiImportC, wideImportC: typed, ast: untyped): typed =
+ansiImportC, wideImportC: typed, ast: untyped): untyped =
   ansiWideWhenProc(identReplacements, ansiImportC, wideImportC, ast)
 
 proc ansiWideAllProc*(replacements: openarray[AnsiWideReplacement],
@@ -155,7 +153,7 @@ proc ansiWideAllProc*(replacements: openarray[AnsiWideReplacement],
 
 macro ansiWideAll*(tIdent, ansiIdent, wideIdent: untyped,
   innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
-  ast: untyped): typed =
+  ast: untyped): untyped =
   #[
     ansiWideAll(tIdent = StringContainer, ansiIdent = StringContainerA, wideIdent = StringContainerW,
       innerTIdent = LPTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString):
@@ -182,7 +180,7 @@ macro ansiWideAll*(tIdent, ansiIdent, wideIdent: untyped,
 
 macro ansiWideAllImportC*(tIdent, ansiIdent, wideIdent: untyped,
   innerTIdent: untyped, innerAnsiIdent, innerWideIdent: typed,
-  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiImportC, wideImportC: typed, ast: untyped): untyped =
   #[
     ansiWideAll(tIdent = foobar, ansiIdent = foobarA, wideIdent = foobarW,
       innerTIdent = LPTStr, innerAnsiIdent = cstring, innerWideIdent = WideCString,
@@ -204,7 +202,7 @@ macro ansiWideAllImportC*(tIdent, ansiIdent, wideIdent: untyped,
     ], ansiImportC, wideImportC, ast)
 
 macro ansiWideAllMulti*(tIdent, ansiIdent, wideIdent: untyped,
-  innerReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): typed =
+  innerReplacements: static[openarray[AnsiWideReplacement]], ast: untyped): untyped =
   var replacements = newSeq[AnsiWideReplacement](innerReplacements.len + 1)
   replacements[0] = (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
   replacements[1..^1] = innerReplacements
@@ -212,7 +210,7 @@ macro ansiWideAllMulti*(tIdent, ansiIdent, wideIdent: untyped,
 
 macro ansiWideAllMultiImportC*(tIdent, ansiIdent, wideIdent: untyped,
   innerReplacements: static[openarray[AnsiWideReplacement]],
-  ansiImportC, wideImportC: typed, ast: untyped): typed =
+  ansiImportC, wideImportC: typed, ast: untyped): untyped =
   var replacements = newSeq[AnsiWideReplacement](innerReplacements.len + 1)
   replacements[0] = (tIdent.getIdentOrSymString, ansiIdent.getIdentOrSymString, wideIdent.getIdentOrSymString)
   replacements[1..^1] = innerReplacements

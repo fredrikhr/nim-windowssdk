@@ -8,8 +8,6 @@
 import .. / shared / winerror
 import .. / shared / wtypes
 
-import dynlib
-
 {.pragma: oleautodll, dynlib: "OleAut32.dll" .}
 
 #[

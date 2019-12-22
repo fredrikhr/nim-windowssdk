@@ -1,6 +1,6 @@
-import .. / .. / .. / src / windowssdk / shared / winerror
-
 when defined(useWinErrorStringify):
+  import .. / .. / .. / src / windowssdk / shared / winerror
+
   block `WinError.$`:
     assert($ error_success == "error_success", $ error_success)
 

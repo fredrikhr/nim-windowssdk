@@ -1,6 +1,6 @@
 import macros
 
-macro whenUseWindowsSdk*(ast: untyped): typed =
+macro whenUseWindowsSdk*(ast: untyped): untyped =
   ast.expectKind({nnkStmtList})
   result = ast.copyNimTree()
   let

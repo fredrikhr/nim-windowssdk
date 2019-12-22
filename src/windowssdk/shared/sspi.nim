@@ -22,8 +22,6 @@ import .. / um / wincred
 import .. / um / wincrypt
 import .. / um / winnt
 
-import dynlib
-
 type
   SecWChar* = WChar
   SecChar* = Char
