@@ -1,6 +1,6 @@
 import .. / shared / winerror
 
-import os, dynlib
+import os
 
 proc coInitialize_HResult(pvReserved: pointer): HResult {.stdcall, importc: "CoInitialize", dynlib: "Ole32.dll".}
   ## ref.: https://msdn.microsoft.com/en-us/library/ms678543.aspx

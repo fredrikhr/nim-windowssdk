@@ -46,7 +46,7 @@
 #      Code - is the facility's status code
 #
 
-import importc_helpers, macros, os, strutils
+import importc_helpers, os, strutils
 
 type HResult* = distinct uint32
   ## ref.: https://msdn.microsoft.com/en-us/library/aa383751.aspx#HRESULT

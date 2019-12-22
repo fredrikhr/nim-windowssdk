@@ -13,7 +13,7 @@
 import unknwn
 import .. / shared / guiddef, .. / shared / wtypesbase, .. / shared / winerror
 
-import os, dynlib
+import os
 
 proc coGetClassObject*[T](
   rclsid: ptr ClsId,

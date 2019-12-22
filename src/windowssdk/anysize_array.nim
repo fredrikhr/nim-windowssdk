@@ -1,4 +1,4 @@
 type
-  AnySizeArray* {.unchecked.} [T] = array[0, T]
+  AnySizeArray*[T] = UncheckedArray[T]
   AnySizeArrayRef*[T] = ref AnySizeArray[T]
   AnySizeArrayPtr*[T] = ptr AnySizeArray[T]
