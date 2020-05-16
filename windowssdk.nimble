@@ -9,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "https://github.com/couven92/nim-importc-helpers.git >= 1.0"
+requires "https://github.com/fredrikhr/nim-importc-helpers.git >= 1.0"
 requires "nim >= 1.0"
 
 import strutils

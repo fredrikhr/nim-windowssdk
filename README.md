@@ -16,7 +16,7 @@ This package is not published to the nimble package manager repository. In order
 add the following line to it:
 
 ``` nimble
-requires "https://github.com/couven92/nim-windowssdk.git >= 10.0.17134.0"
+requires "https://github.com/fredrikhr/nim-windowssdk.git >= 10.0.17134.0"
 ```
 
 ### Use statically linked Windows SDK libraries
